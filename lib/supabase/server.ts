@@ -1,15 +1,27 @@
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 
-export const createClient = async () => {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  if (!url || !anonKey) {
-    throw new Error(
-      "Missing Supabase env vars: set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY"
-    );
-  }
-
-  return createSupabaseClient(url, anonKey);
-};
-
+export async function createClient() {
+  const cookieStore = await cookies();
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string){
+          return cookieStore.get(name)?.value;
+        },
+        try {
+          set(name: string, value: string, options){
+            cookieStore.set({name, value, ...options})
+          }
+        } catch (error) {
+          
+        },
+        remove(name: string, options){
+          cookieStore.set({name, value: "", ...options})
+        }
+      }
+    }
+  );
+}
