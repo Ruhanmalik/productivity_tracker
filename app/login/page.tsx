@@ -1,15 +1,17 @@
 "use client";
 
-imoprt { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/client";
 import { useState } from "react";
 import Link from "next/link";
 
 export default function Login() {
-    async function handleSubmit(e){
-        const [email, setEmail] = useState("");
-        const [password, setPassword] = useState("")
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("")
     
-        const supabase =  createClient();
+    async function handleSubmit(e: React.FormEvent){
+        e.preventDefault();
+        const supabase = createClient();
+        // Add your login logic here
         
     }
   return (
