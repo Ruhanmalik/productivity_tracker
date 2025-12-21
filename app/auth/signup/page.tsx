@@ -19,7 +19,7 @@ export default function Signup() {
             <button type="submit">Signup</button>
         </form>
         <button>
-            <Link href="/login">Already have an account?</Link>
+            <Link href="/auth/login">Already have an account?</Link>
         </button>
     </div>
   )
