@@ -2,25 +2,67 @@
 
 import { useState } from "react";
 import Link from "next/link";
-
+import { useRouter } from "next/navigation";
 
 export default function Signup() {
-    async function handleSubmit(e: React.FormEvent<HTMLFormElement>){
-        const [email, setEmail] = useState("");
-        const [password, setPassword] = useState("")
-        const [error, setError] = useState<string | null>(null)
-        const [loading, setLoading] = useState(false)
-        const router = useRouter();
+    
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("")
+    const [confirmPassword, setConfirmPassword] = useState("")
+    const [error, setError] = useState<string | null>(null)
+    const [success, setSuccess] = useState<string | null>(null)
+    const [loading, setLoading] = useState(false)
+    const router = useRouter();
 
-        e.preventDefault();
+        async function handleSubmit(e: React.FormEvent<HTMLFormElement>){
+            e.preventDefault();
+            setError(null);
+            setLoading(true);
 
+            if (!email || !password || ! confirmPassword) {
+                setError("Please fill in all fields")
+                setLoading(false);
+                return;
+            }
 
+            if (!email.includes("@")) {
+                setError("Please enter a valid email address")
+                setLoading(false);
+                return;
+            }
 
-        
+            if (password.length < 6) {
+                setError("Password must be at least 6 characters long")
+                setLoading(false);
+                return;
+            }
+
+            if (password != confirmPassword) {
+                setError("Passwords do not match")
+                setLoading(false);
+                return;
+            }
+
+            try {
+                const result = await Signup(email, password);
+                if (!result.success) {
+                    setError(result.error || "An error occurred")
+                    setLoading(false);
+                    return;
+                }
+                setSuccess(result.message || "Signup Successful");
+                setLoading(false);
+                router.push("/")
+                router.refresh()
+            } catch (error) {
+                console.error("Signup error:", error);
+                setError("An unexpected error occurred, please try again.")
+                setLoading(false);
+            }
     }
   return (
     <div>
-        <form>
+        <form onSubmit={handleSubmit}>
             <h1>Signup</h1>
             <div>
                 <label htmlFor="email">Email</label>
@@ -50,16 +92,34 @@ export default function Signup() {
                     autoComplete="new-password"
                 />
             </div>
+            <div>
+                <label htmlFor="confirm-password">Confirm Password</label>
+                <input
+                    type="password"
+                    id="confirm-password"
+                    placeholder="Confirm Password"
+                    disabled={loading}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    autoComplete="new-password"
+                />
+            </div>
             {error &&
             <p style = {{color: "red"}}>
                 {error}
+            </p>
+            }
+            {success &&
+            <p style = {{color: "green"}}>
+                {success}
             </p>
             }
             <button
             type="submit"
             disabled={loading}
             >
-                {loading ? "Signing up..." | "Signup"}
+                {loading ? "Signing up..." : "Signup"}
             </button>
         </form>
         <p>
