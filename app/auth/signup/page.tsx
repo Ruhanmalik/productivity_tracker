@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { signup } from "./actions";
 
 export default function Signup() {
     
@@ -44,7 +45,7 @@ export default function Signup() {
             }
 
             try {
-                const result = await Signup(email, password);
+                const result = await signup(email, password);
                 if (!result.success) {
                     setError(result.error || "An error occurred")
                     setLoading(false);

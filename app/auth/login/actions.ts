@@ -23,7 +23,7 @@ export async function login(email: string, password: string) {
             }
         };
 
-        revalidatePath("/");
+        revalidatePath("/", "layout");
 
         return {
             success: true,
