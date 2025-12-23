@@ -9,13 +9,13 @@ export default function ForgotPasswordPage() {
     const [email, setEmail] = useState("")
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
-    const [success, setSuccess] = useState(false)
+    const [success, setSuccess] = useState<string | null>(null)
 
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>){
         e.preventDefault();
         setLoading(true)
         setError(null)
-        setSuccess(false)
+        setSuccess(null)
 
         if (!email || !email.includes("@")) {
             setError("Please enter a valid email address")
@@ -33,13 +33,14 @@ export default function ForgotPasswordPage() {
             }
 
             setSuccess(result.message || "Check your email for the reset link");
-            setEmail(""); // Clear the form
+            setEmail(""); 
             setLoading(false);
         } catch (error) {
             console.error("Forgot password error:", error);
             setError("An unexpected error occurred, please try again.")
             setLoading(false)
         }
+    }
 
     return (
         <div>
@@ -78,5 +79,4 @@ export default function ForgotPasswordPage() {
             </p>
         </div>
     )
-    }
 }
