@@ -29,10 +29,17 @@ export async function signup(email: string, password: string) {
                 error: error.message
             }
         }
-        if (!data.session) {
+        if (!data.user) {
+            return { 
+                succes: false,
+                error: "Failed to create user"
+            }
+        }
+        if (data.user && !data.session) {
             return {
-                success: false,
-                error: "failed to create session"
+                success: true,
+                error: "Check email for verification link",
+                requiresConfirmation: true
             }
             
         }

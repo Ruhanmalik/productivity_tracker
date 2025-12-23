@@ -53,8 +53,11 @@ export default function Signup() {
                 }
                 setSuccess(result.message || "Signup Successful");
                 setLoading(false);
-                router.push("/")
-                router.refresh()
+
+                if (!result.requiresConfirmation) {
+                    router.push("/")
+                    router.refresh()
+                }
             } catch (error) {
                 console.error("Signup error:", error);
                 setError("An unexpected error occurred, please try again.")
