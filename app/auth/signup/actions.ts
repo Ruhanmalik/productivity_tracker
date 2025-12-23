@@ -31,14 +31,14 @@ export async function signup(email: string, password: string) {
         }
         if (!data.user) {
             return { 
-                succes: false,
+                success: false,
                 error: "Failed to create user"
             }
         }
         if (data.user && !data.session) {
             return {
                 success: true,
-                error: "Check email for verification link",
+                message: "Check email for verification link",
                 requiresConfirmation: true
             }
             
