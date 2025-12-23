@@ -11,8 +11,11 @@ export default async function NavBar() {
         <Link href="/">Home</Link>
       </div>
       {user && (
-        <div>
+        <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
           <span>Logged in as: {user.email}</span>
+          <form action="/auth/logout" method="post">
+            <button type="submit">Logout</button>
+          </form>
         </div>
       )}
     </nav>
