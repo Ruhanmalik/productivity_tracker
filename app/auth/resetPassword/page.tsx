@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ResetPassword } from "./actions";
+import { UpdatePassword } from "./actions";
 import { useRouter } from "next/navigation";
 
 
@@ -38,7 +38,7 @@ export default function ResetPassword() {
         }
 
         try{
-            const result = await ResetPassword(password);
+            const result = await UpdatePassword(password);
             if (!result.success) {
                 setError(result.error || "An error occured")
                 setLoading(false);
@@ -50,7 +50,10 @@ export default function ResetPassword() {
 
             router.push("/auth/login");
             router.refresh()
-
+        } catch (error) {
+            console.error("Reset password error:", error);
+            setError("An unexpected error occurred, please try again.")
+            setLoading(false);
         }
     }
 

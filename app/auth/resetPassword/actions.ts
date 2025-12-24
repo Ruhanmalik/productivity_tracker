@@ -1,7 +1,7 @@
 "use server";
-import { creatClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 
-export async function ResetPassword(newPassword: string){
+export async function UpdatePassword(newPassword: string){
     // Placeholder for reset password logic
     if (!newPassword) {
         return {
