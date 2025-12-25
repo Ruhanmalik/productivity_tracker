@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { UpdatePassword } from "./actions";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 
 
 export default function ResetPassword() {
@@ -11,13 +12,52 @@ export default function ResetPassword() {
     const [ loading, setLoading] = useState(false)
     const [ error, setError] = useState<string | null>(null)
     const [ success, setSuccess] = useState<string | null>(null)
+    const [ sessionReady, setSessionReady ] = useState(false);
     const router = useRouter();
+
+    useEffect(() => {
+        const handlePasswordReset = async() => {
+            const supabase = createClient();
+
+            const hashParams = new URLSearchParams(window.location.hash.slice(1));
+            const type = hashParams.get("type");
+            console.log(type);
+
+            if (type === 'recovery') {
+                const { data: {session}, error } = await supabase.auth.getSession();
+
+                if (error) {
+                    console.error("Session error: ", error);
+                    setError("An unexpected error occurred, please try again.");
+                    return;
+                }
+
+                if (!session) {
+                    setError("No session found. Please request a new password reset.");
+                    return;
+                }
+
+                setSessionReady(true);
+
+            }
+            else {
+                setError("Invalid password reset link.");
+            }
+        }
+        handlePasswordReset();
+    }, []);
 
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>){
         e.preventDefault();
         setError(null);
         setSuccess(null);
         setLoading(true);
+
+        if(!sessionReady) {
+            setError("Session not ready. Please try again.");
+            setLoading(false);
+            return;
+        }
 
         if (!password || ! confirmPassword) {
             setError("Please fill in all fields")
@@ -48,8 +88,10 @@ export default function ResetPassword() {
             setSuccess(result.message || "Password reset successful");
             setLoading(false);
 
-            router.push("/auth/login");
-            router.refresh()
+            setTimeout(() => {
+                router.push("/auth/login");
+                router.refresh()
+            }, 1500) 
         } catch (error) {
             console.error("Reset password error:", error);
             setError("An unexpected error occurred, please try again.")
