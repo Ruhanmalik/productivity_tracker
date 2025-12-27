@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { EventList } from "/components/EventList";
 
 export default async function Home() {
   const supabase = await createClient();
