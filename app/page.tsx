@@ -15,7 +15,6 @@ export default async function Home() {
     <div>
       <h1>Welcome to Productivity Tracker</h1>
       <p>You are logged in as: {user.email}</p>
-      {/* Add your home page content here */}
     </div>
   );
 }
