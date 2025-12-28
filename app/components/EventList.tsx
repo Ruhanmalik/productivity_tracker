@@ -40,7 +40,7 @@ export function EventList({ events }: EventListProps) {
                 hour: 'numeric',
                 minute: '2-digit'});
     }
-
+}
 
     return (
         <div>
@@ -110,5 +110,4 @@ export function EventList({ events }: EventListProps) {
           </div>
         </div>
       )
-    }
 }
