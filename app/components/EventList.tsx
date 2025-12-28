@@ -1,3 +1,5 @@
+"use client"
+
 import { useState } from "react";
 import { EventForm } from "./EventForm";
 import { deleteEvent } from "../actions/events";
