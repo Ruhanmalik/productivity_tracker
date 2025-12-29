@@ -8,7 +8,7 @@ export default async function NavBar() {
   return (
     <nav style={{ display: "flex", justifyContent: "space-between", padding: "1rem", borderBottom: "1px solid #ccc" }}>
       <div>
-        <Link href="/">Home</Link>
+        <Link href="/">Schedule.io</Link>
       </div>
       {user && (
         <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
