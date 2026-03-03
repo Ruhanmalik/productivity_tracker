@@ -65,6 +65,12 @@ export function Calendar({ events, onDateSelect, onEventClick }: CalendarProps) 
     }
 
     const renderMonthView = () => (
-        
+        <div>
+            {
+                {dayLabels.map(day => (
+                    {day}
+    ))}
+            }
+        </div>
     )
 }
