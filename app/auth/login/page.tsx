@@ -11,7 +11,7 @@ export default function LoginPage() {
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const router = useRouter();
-    
+
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>){
         e.preventDefault();
         setError(null);
@@ -42,67 +42,69 @@ export default function LoginPage() {
                 setLoading(false);
                 return;
             }
-            router.push("/")
-            router.refresh()
+            router.push("/calendar");
+            router.refresh();
         } catch (error) {
             console.error("Login error:", error);
             setError("An unexpected error occurred, please try again.")
             setLoading(false);
         }
-        
-        
     }
-  return (
-    <div>
-        <h1>Login</h1>
-        <form onSubmit={handleSubmit}>
-            <div>
-                <label htmlFor="email">Email</label>
-                <input 
-                type="email"
-                id="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={loading}
-                autoComplete="email"
-                />
-            </div> 
 
-            <div>  
-                <label htmlFor="password">Password</label>
-                <input 
-                type="password"
-                id="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={loading}
-                autoComplete="current-password"
-                minLength={6}
-                />
+  return (
+    <div className="auth-page">
+        <div className="auth-card">
+            <div className="auth-wordmark">Schedule.io</div>
+            <h1 className="auth-title">Welcome back</h1>
+            <p className="auth-desc">Sign in to your account to continue</p>
+
+            <form onSubmit={handleSubmit}>
+                {error && <div className="alert-error">{error}</div>}
+
+                <div className="form-group">
+                    <label htmlFor="email">Email</label>
+                    <input
+                        type="email"
+                        id="email"
+                        placeholder="you@example.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        disabled={loading}
+                        autoComplete="email"
+                    />
+                </div>
+
+                <div className="form-group">
+                    <label htmlFor="password">Password</label>
+                    <input
+                        type="password"
+                        id="password"
+                        placeholder="••••••••"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        disabled={loading}
+                        autoComplete="current-password"
+                        minLength={6}
+                    />
+                </div>
+
+                <div className="form-actions">
+                    <button type="submit" disabled={loading} className="btn btn-accent" style={{ width: "100%" }}>
+                        {loading ? "Signing in…" : "Sign in"}
+                    </button>
+                </div>
+            </form>
+
+            <div className="auth-divider">
+                <Link href="/auth/forgotPassword">Forgot your password?</Link>
             </div>
-            {error && (
-                <p style = {{color: "red"}}>
-                    {error}
-                </p>
-            )}
-            <button
-            type="submit"
-            disabled={loading}
-            >
-                {loading ? "Logging in..." : "Login"}
-            </button>
-        </form>
-        <p>
-            <Link href="/auth/forgotPassword">Forgot password</Link>
-        </p>
-        <p>
-            Dont have an account?{" "}
-            <Link href="/auth/signup">Sign up</Link>
-        </p>
+            <div className="auth-divider" style={{ borderTop: "none", paddingTop: 10, marginTop: 0 }}>
+                No account?{" "}
+                <Link href="/auth/signup">Create one</Link>
+            </div>
+        </div>
     </div>
   )
 }

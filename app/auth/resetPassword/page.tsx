@@ -5,7 +5,6 @@ import { UpdatePassword } from "./actions";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-
 export default function ResetPassword() {
     const [ password, setPassword] = useState("")
     const [ confirmPassword, setConfirmPassword] = useState("")
@@ -13,38 +12,47 @@ export default function ResetPassword() {
     const [ error, setError] = useState<string | null>(null)
     const [ success, setSuccess] = useState<string | null>(null)
     const [ sessionReady, setSessionReady ] = useState(false);
+    const [ sessionChecked, setSessionChecked ] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
-        const handlePasswordReset = async() => {
-            const supabase = createClient();
+        let cancelled = false;
+        const supabase = createClient();
 
-            const hashParams = new URLSearchParams(window.location.hash.slice(1));
-            const type = hashParams.get("type");
-            console.log(type);
-
-            if (type === 'recovery') {
-                const { data: {session}, error } = await supabase.auth.getSession();
-
-                if (error) {
-                    console.error("Session error: ", error);
-                    setError("An unexpected error occurred, please try again.");
-                    return;
-                }
-
-                if (!session) {
-                    setError("No session found. Please request a new password reset.");
-                    return;
-                }
-
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            if (cancelled || !session) return;
+            if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") {
                 setSessionReady(true);
+                setError(null);
+            }
+        });
 
+        (async () => {
+            const { data: { session }, error } = await supabase.auth.getSession();
+
+            if (cancelled) return;
+            setSessionChecked(true);
+
+            if (error) {
+                console.error("Session error: ", error);
+                setError("An unexpected error occurred, please try again.");
+                return;
             }
-            else {
-                setError("Invalid password reset link.");
+
+            if (session) {
+                setSessionReady(true);
+                return;
             }
-        }
-        handlePasswordReset();
+
+            setError(
+                "Invalid or expired password reset link. Please request a new reset email."
+            );
+        })();
+
+        return () => {
+            cancelled = true;
+            subscription.unsubscribe();
+        };
     }, []);
 
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>){
@@ -53,13 +61,19 @@ export default function ResetPassword() {
         setSuccess(null);
         setLoading(true);
 
-        if(!sessionReady) {
-            setError("Session not ready. Please try again.");
+        if (!sessionChecked) {
+            setError("Still verifying your reset link. Please wait a moment.");
             setLoading(false);
             return;
         }
 
-        if (!password || ! confirmPassword) {
+        if (!sessionReady) {
+            setError("Your reset session is missing or expired. Please open the link from your email again or request a new reset.");
+            setLoading(false);
+            return;
+        }
+
+        if (!password || !confirmPassword) {
             setError("Please fill in all fields")
             setLoading(false);
             return;
@@ -80,18 +94,18 @@ export default function ResetPassword() {
         try{
             const result = await UpdatePassword(password);
             if (!result.success) {
-                setError(result.error || "An error occured")
+                setError(result.error || "An error occurred")
                 setLoading(false);
                 return;
             }
-            
+
             setSuccess(result.message || "Password reset successful");
             setLoading(false);
 
             setTimeout(() => {
                 router.push("/auth/login");
                 router.refresh()
-            }, 1500) 
+            }, 1500)
         } catch (error) {
             console.error("Reset password error:", error);
             setError("An unexpected error occurred, please try again.")
@@ -99,64 +113,67 @@ export default function ResetPassword() {
         }
     }
 
+    const formDisabled = loading || !sessionChecked || !sessionReady;
+
     return (
-        <div>
-            <h1>Reset Passsord</h1>
-            <form onSubmit={handleSubmit}>
-                <div>
-                <label htmlFor="password">Password</label>
-                <input
-                    type="password"
-                    id="password"
-                    value={password}
-                    placeholder="Password"
-                    onChange={(e) => setPassword(e.target.value)}
-                    disabled={loading}
-                    required
-                    minLength={6}
-                    autoComplete="new-password"
-                    >
-                </input>
-                </div>
+        <div className="auth-page">
+            <div className="auth-card">
+                <div className="auth-wordmark">Schedule.io</div>
+                <h1 className="auth-title">Set new password</h1>
+                <p className="auth-desc">
+                    {!sessionChecked
+                        ? "Verifying your reset link…"
+                        : sessionReady
+                        ? "Choose a new password for your account"
+                        : "Reset link invalid or expired"}
+                </p>
 
-                <div>
-                    <label htmlFor="confirmPassword">Confirm Password</label>
-                    <input
-                        type="password"
-                        id="confirmPassword"
-                        value={confirmPassword}
-                        placeholder="Confirm Password"
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        disabled={loading}
-                        minLength={6}
-                        required
-                        autoComplete="new-password"
+                <form onSubmit={handleSubmit}>
+                    {error && <div className="alert-error">{error}</div>}
+                    {success && <div className="alert-success">{success}</div>}
+
+                    <div className="form-group">
+                        <label htmlFor="password">New Password</label>
+                        <input
+                            type="password"
+                            id="password"
+                            value={password}
+                            placeholder="Min. 6 characters"
+                            onChange={(e) => setPassword(e.target.value)}
+                            disabled={formDisabled}
+                            required
+                            minLength={6}
+                            autoComplete="new-password"
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label htmlFor="confirmPassword">Confirm Password</label>
+                        <input
+                            type="password"
+                            id="confirmPassword"
+                            value={confirmPassword}
+                            placeholder="Repeat new password"
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            disabled={formDisabled}
+                            minLength={6}
+                            required
+                            autoComplete="new-password"
+                        />
+                    </div>
+
+                    <div className="form-actions">
+                        <button
+                            type="submit"
+                            disabled={formDisabled}
+                            className="btn btn-accent"
+                            style={{ width: "100%" }}
                         >
-                            
-                        </input>
-                </div>
-                {error &&
-                <p style={{ color: "red"}}
-                >
-                    {error}
-                </p>
-                }
-
-                {success &&
-                <p style={{ color: "green"}}
-                >
-                    {success}
-                </p>
-            }
-
-            <button
-            type="submit"
-            disabled={loading}
-            >
-                {loading ? "Resetting password..." : "Reset Password"}
-            </button>
-
-            </form>
+                            {loading ? "Resetting…" : "Reset password"}
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     )
 }
